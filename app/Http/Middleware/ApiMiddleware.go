@@ -1,0 +1,34 @@
+package Middleware
+
+import (
+	"fmt"
+	"encoding/json"
+	"net/http"
+)
+
+type httpHandlerFunc func (http.ResponseWriter, *http.Request)  
+type Response struct{
+	Status int `json:status`
+	Message string `json:message`
+}
+
+type ApiMiddleware struct{}
+
+func (ApiMiddleware) Auth(next httpHandlerFunc) httpHandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		token := req.Header.Get("token")
+		var response Response
+		if token == "ramadanrizky" {
+			fmt.Println("Logged in")
+			next(res, req)
+		}else {
+			fmt.Println("Not Authenticated")
+			response.Status = 304
+			response.Message = "Not Authenticated"
+
+			res.Header().Set("Content-type", "application/json")
+			json.NewEncoder(res).Encode(response)
+			res.WriteHeader(http.StatusUnauthorized)
+		}
+	}
+}
