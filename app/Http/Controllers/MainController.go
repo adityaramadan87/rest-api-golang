@@ -67,17 +67,28 @@ func (MainController) InsertUser(w http.ResponseWriter, r *http.Request){
 	users.Id, err = strconv.Atoi(r.Form.Get("id"))
 	users.Fullname = r.Form.Get("fullname")
 	users.Email = r.Form.Get("email")
-	users.Phone, err = strconv.Atoi(r.Form.Get("phone"))
-	dataUsers = append(dataUsers, users)
-	// id := r.Form.Get("id")
-	// fullname := r.Form.Get("fullname")
-	// email := r.Form.Get("email")
-	// phone := r.Form.Get("phone")
+	users.Phone = r.Form.Get("phone")
 
-	_, err = db.Exec("INSERT INTO users (id, fullname, email, phone) values ($1,$2,$3,$4)",users.Id, users.Fullname, users.Email, users.Phone,)
+	_, err = db.Exec("INSERT INTO users (fullname, email, phone) values ($1,$2,$3)", users.Fullname, users.Email, users.Phone,)
 	if err != nil {
 		log.Print(err)
+		responseUser.Status = 400
+		responseUser.Message = "failed add data"
+		responseUser.Data = nil
+		w.Header().Set("Content-type", "application/json")
+		json.NewEncoder(w).Encode(responseUser)
+		return 
 	}
+	
+	data, err := db.Query("SELECT * FROM users WHERE email = $1", users.Email)
+	for data.Next() {
+		if err:= data.Scan(&users.Id, &users.Fullname, &users.Email, &users.Phone); err != nil {
+			log.Print(err)
+		}else {
+			dataUsers = append(dataUsers, users)
+		}
+	}
+	
 	responseUser.Status = 200
 	responseUser.Message = "Add 1 Data"
 	responseUser.Data = dataUsers
