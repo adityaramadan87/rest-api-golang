@@ -53,8 +53,8 @@ func (MainController) Test(res http.ResponseWriter, req *http.Request){
 }
 
 func (MainController) InsertUser(w http.ResponseWriter, r *http.Request){
-//	var users Model.User
-//	var dataUsers []Model.User
+	var users Model.User
+	var dataUsers []Model.User
 	var responseUser Model.Response
 
 	db := database.Connect()
@@ -64,17 +64,23 @@ func (MainController) InsertUser(w http.ResponseWriter, r *http.Request){
 	if err != nil {
 		panic(err)
 	}
-	id := r.Form.Get("id")
-	fullname := r.Form.Get("fullname")
-	email := r.Form.Get("email")
-	phone := r.Form.Get("phone")
+	users.Id, err = strconv.Atoi(r.Form.Get("id"))
+	users.Fullname = r.Form.Get("fullname")
+	users.Email = r.Form.Get("email")
+	users.Phone, err = strconv.Atoi(r.Form.Get("phone"))
+	dataUsers = append(dataUsers, users)
+	// id := r.Form.Get("id")
+	// fullname := r.Form.Get("fullname")
+	// email := r.Form.Get("email")
+	// phone := r.Form.Get("phone")
 
-	_, err = db.Exec("INSERT INTO users (id, fullname, email, phone) values ($1,$2,$3,$4)",id, fullname, email, phone,)
+	_, err = db.Exec("INSERT INTO users (id, fullname, email, phone) values ($1,$2,$3,$4)",users.Id, users.Fullname, users.Email, users.Phone,)
 	if err != nil {
 		log.Print(err)
 	}
 	responseUser.Status = 200
 	responseUser.Message = "Add 1 Data"
+	responseUser.Data = dataUsers
 	log.Print("Insert to database table users")
 
 	w.Header().Set("Content-type", "application/json")
