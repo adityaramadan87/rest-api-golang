@@ -145,15 +145,22 @@ func (MainController) DeleteUser(w http.ResponseWriter, r *http.Request){
 
 	user_id, _ := strconv.Atoi(id)
 
-	_, err = db.Exec("DELETE from users where id=$1",user_id)
+	log.Print(id)
+	log.Print(user_id)
+	_, err = db.Exec("DELETE FROM users WHERE id = $1",user_id)
 	
 	if err != nil {
 		log.Print(err)
+		responseUser.Status = 400
+		responseUser.Message = "failed delete data"
+		w.Header().Set("Content-type", "application/json")
+		json.NewEncoder(w).Encode(responseUser)
+		return
 	}
 
 	responseUser.Status = 200
 	responseUser.Message = "Success delete data"
-	log.Print("deleta data to database in table users")
+	log.Print("delete data to database in table users")
 
 	w.Header().Set("Content-type", "application/json")
 	json.NewEncoder(w).Encode(responseUser)
