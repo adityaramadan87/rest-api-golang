@@ -290,6 +290,7 @@ func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
 
 }
 
+<<<<<<< HEAD
 // func QueryUser(email string) Model.User {
 // 	var users Model.User
 // 	db := database.Connect()
@@ -346,3 +347,60 @@ func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
 // 	return true
 // }
 
+=======
+func QueryUser(email string) Model.User {
+	var users Model.User
+	db := database.Connect()
+	defer db.Close()
+	err := db.QueryRow(
+		`SELECT id,
+		fullname,
+		email,
+		phone,
+		avatar,
+		password,
+		is_activate
+		FROM users WHERE email = $1`,
+		email).
+		Scan(
+			&users.Id,
+			&users.Fullname,
+			&users.Email,
+			&users.Phone,
+			&users.Avatar,
+			&users.Password,
+			&users.IsActivate,
+		)
+	_ = err
+	return users
+}
+
+func SendEmail(email string) bool {
+	const CONFIG_SMTP_HOST = "smtp.gmail.com"
+	const CONFIG_SMTP_PORT = 587
+	const CONFIG_EMAIL = "youremail"
+	const CONFIG_PASSWORD = "yourpass"
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", CONFIG_EMAIL)
+	mailer.SetHeader("To", email)
+	mailer.SetHeader("Subject", "Email Verification")
+	mailer.SetBody("text/html", "<a href=\"http://localhost:9000/index\"><button type=\"submit\">ACITVATE</button></a>")
+
+	dialer := gomail.NewDialer(
+		CONFIG_SMTP_HOST,
+		CONFIG_SMTP_PORT,
+		CONFIG_EMAIL,
+		CONFIG_PASSWORD,
+	)
+
+	err := dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	log.Print("Success send mail")
+	return true
+}
+>>>>>>> 1be6272ae4af3079de68daae1cd906fee0093047
