@@ -23,7 +23,6 @@ func main()  {
 	//for web
 	http.HandleFunc("/index", index)
 
-
 	//set Routes for SOCKET
 	http.Handle("/socket.io/", socket.SetRoutes())
 	fmt.Println("backend start server on port :9000")
@@ -31,6 +30,8 @@ func main()  {
 	if err != nil {
 		panic(err)
 	}
+
+	
 	
 
 	// log.Fatal(http.ListenAndServe(":9000", nil))

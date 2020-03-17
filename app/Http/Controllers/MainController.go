@@ -8,7 +8,8 @@ import (
 	"belajar-golang/app/Model"
 	"golang.org/x/crypto/bcrypt"
 	"strconv"
-	"gopkg.in/gomail.v2"
+	. "belajar-golang/app/Helper"
+	_ "gopkg.in/gomail.v2"
 	_ "encoding/base64"
 	_ "strings"
 )
@@ -61,6 +62,8 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request){
 	var dataUsers []Model.User
 	var responseUser Model.Response
 
+	randInt := AppHelper{}.GenerateRandomInt()
+
 	db := database.Connect()
 	defer db.Close()
 
@@ -77,7 +80,7 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request){
 	users.IsActivate = false
 	log.Print(users.Password)
 
-	var summaryUser Model.User = QueryUser(users.Email)
+	var summaryUser Model.User = AppHelper{}.QueryUser(users.Email)
 	if (Model.User{}) != summaryUser {
 		responseUser.Status = 400
 		responseUser.Message = "the user who uses the email already exists"
@@ -107,7 +110,8 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request){
 		}
 	}
 	
-	isSend := SendEmail(users.Email)
+	isSend := AppHelper{}.SendEmail(users.Email, users.Id, randInt)
+
 	if !isSend {
 		responseUser.Status = 400
 		responseUser.Message = "failed sending email"
@@ -258,7 +262,7 @@ func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 
-	var summaryUser Model.User = QueryUser(email)
+	var summaryUser Model.User = AppHelper{}.QueryUser(email)
 	if (Model.User{}) == summaryUser {
 		responseUser.Status = 400
 		responseUser.Message = "Wrong email"
@@ -286,58 +290,59 @@ func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
 
 }
 
-func QueryUser(email string) Model.User {
-	var users Model.User
-	db := database.Connect()
-	defer db.Close()
-	err := db.QueryRow(
-		`SELECT id,
-		fullname,
-		email,
-		phone,
-		avatar,
-		password,
-		is_activate
-		FROM users WHERE email = $1`,
-		email).
-		Scan(
-			&users.Id,
-			&users.Fullname,
-			&users.Email,
-			&users.Phone,
-			&users.Avatar,
-			&users.Password,
-			&users.IsActivate,
-		)
-	_ = err
-	return users
-}
+// func QueryUser(email string) Model.User {
+// 	var users Model.User
+// 	db := database.Connect()
+// 	defer db.Close()
+// 	err := db.QueryRow(
+// 		`SELECT id,
+// 		fullname,
+// 		email,
+// 		phone,
+// 		avatar,
+// 		password,
+// 		is_activate
+// 		FROM users WHERE email = $1`,
+// 		email).
+// 		Scan(
+// 			&users.Id,
+// 			&users.Fullname,
+// 			&users.Email,
+// 			&users.Phone,
+// 			&users.Avatar,
+// 			&users.Password,
+// 			&users.IsActivate,
+// 		)
+// 	_ = err
+// 	return users
+// }
 
-func SendEmail(email string) bool {
-	const CONFIG_SMTP_HOST = "smtp.gmail.com"
-	const CONFIG_SMTP_PORT = 587
-	const CONFIG_EMAIL = "malfajri78@gmail.com"
-	const CONFIG_PASSWORD = "terlalupendek"
+// func SendEmail(email string) bool {
+// 	const CONFIG_SMTP_HOST = "smtp.gmail.com"
+// 	const CONFIG_SMTP_PORT = 587
+// 	const CONFIG_EMAIL = "malfajri78@gmail.com"
+// 	const CONFIG_PASSWORD = "terlalupendek"
 
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", CONFIG_EMAIL)
-	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "Email Verification")
-	mailer.SetBody("text/html", "<a href=\"http://localhost:9000/index\"><button type=\"submit\">ACITVATE</button></a>")
+// 	mailer := gomail.NewMessage()
+// 	mailer.SetHeader("From", CONFIG_EMAIL)
+// 	mailer.SetHeader("To", email)
+// 	mailer.SetHeader("Subject", "Email Verification")
+// 	mailer.SetBody("text/html", "<a href=\"http://localhost:9000/index\"><button type=\"submit\">ACITVATE</button></a>")
 
-	dialer := gomail.NewDialer(
-		CONFIG_SMTP_HOST,
-		CONFIG_SMTP_PORT,
-		CONFIG_EMAIL,
-		CONFIG_PASSWORD,
-	)
+// 	dialer := gomail.NewDialer(
+// 		CONFIG_SMTP_HOST,
+// 		CONFIG_SMTP_PORT,
+// 		CONFIG_EMAIL,
+// 		CONFIG_PASSWORD,
+// 	)
 
-	err := dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Fatal(err)
-		return false
-	}
+// 	err := dialer.DialAndSend(mailer)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 		return false
+// 	}
 
-	log.Print("Success send mail")
-	return true
-}
+// 	log.Print("Success send mail")
+// 	return true
+// }
+

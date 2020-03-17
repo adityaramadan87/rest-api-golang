@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	. "belajar-golang/app/Http/Middleware"
 	. "belajar-golang/app/Http/Controllers"
+	. "belajar-golang/app/Helper"
 )
 
 func SetRoutes() *mux.Router {
@@ -18,6 +19,8 @@ func SetRoutes() *mux.Router {
 	router.HandleFunc("/user/delete", MainController{}.DeleteUser).Methods("POST")
 	router.HandleFunc("/upload/avatar", MainController{}.UploadAvatar).Methods("POST")
 	router.HandleFunc("/user/login", MainController{}.LoginUser).Methods("POST")
+
+	router.HandleFunc("/user/verification/{randintone}{id}{randinttwo}", AppHelper{}.ActivateUser)
 
 	//if use middleware
 	router.HandleFunc("/auth/user/get", ApiMiddleware{}.Auth(MainController{}.GetUser)).Methods("GET")
