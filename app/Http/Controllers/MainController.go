@@ -316,8 +316,8 @@ func QueryUser(email string) Model.User {
 func SendEmail(email string) bool {
 	const CONFIG_SMTP_HOST = "smtp.gmail.com"
 	const CONFIG_SMTP_PORT = 587
-	const CONFIG_EMAIL = "malfajri78@gmail.com"
-	const CONFIG_PASSWORD = "terlalupendek"
+	const CONFIG_EMAIL = "youremail"
+	const CONFIG_PASSWORD = "yourpass"
 
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", CONFIG_EMAIL)
