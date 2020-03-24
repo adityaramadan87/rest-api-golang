@@ -20,7 +20,7 @@ func SetRoutes() *mux.Router {
 	router.HandleFunc("/upload/avatar", MainController{}.UploadAvatar).Methods("POST")
 	router.HandleFunc("/user/login", MainController{}.LoginUser).Methods("POST")
 
-	router.HandleFunc("/user/verification/{randintone}{id}{randinttwo}", AppHelper{}.ActivateUser)
+	router.HandleFunc("/user/verification/{id}", AppHelper{}.ActivateUser)
 
 	//if use middleware
 	router.HandleFunc("/auth/user/get", ApiMiddleware{}.Auth(MainController{}.GetUser)).Methods("GET")

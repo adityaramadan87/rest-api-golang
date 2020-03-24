@@ -11,21 +11,28 @@ import (
 	"github.com/gorilla/mux"
 	"strconv"
 	"fmt"
+	_ "reflect"
 )
 
 type AppHelper struct {}
 
+var expiredActivationTimer *time.Timer
+var timeExpired bool = false
+var hasBeenVerified = false
+
 func (AppHelper) SendEmail(email string, id int, randInt int) bool {
 	const CONFIG_SMTP_HOST = "smtp.gmail.com"
 	const CONFIG_SMTP_PORT = 587
-	const CONFIG_EMAIL = "youremail"
-	const CONFIG_PASSWORD = "yourpass"
+	const CONFIG_EMAIL = "malfajri78@gmail.com"
+	const CONFIG_PASSWORD = "terlalupendek"
+
+	hashId := strconv.Itoa(AppHelper{}.GenerateRandomInt())+strconv.Itoa(id)+strconv.Itoa(randInt)
 
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", CONFIG_EMAIL)
 	mailer.SetHeader("To", email)
 	mailer.SetHeader("Subject", "Email Verification")
-	mailer.SetBody("text/html", "<a href=\"http://localhost:9000/user/verification/"+strconv.Itoa(AppHelper{}.GenerateRandomInt())+strconv.Itoa(id)+strconv.Itoa(randInt)+"\"><button type=\"submit\">ACITVATE</button></a>")
+	mailer.SetBody("text/html", "<a href=\"http://localhost:9000/user/verification/"+hashId+"\"><button type=\"submit\">ACITVATE</button></a>")
 
 	dialer := gomail.NewDialer(
 		CONFIG_SMTP_HOST,
@@ -40,12 +47,21 @@ func (AppHelper) SendEmail(email string, id int, randInt int) bool {
 		return false
 	}
 
+	expiredActivationTimer = time.NewTimer(25 * time.Second)
+
+	go func(){
+		<- expiredActivationTimer.C
+		log.Print("expired")
+		timeExpired = true
+	}()
+
 	log.Print("Success send mail")
 	return true
 }
 
 func (AppHelper) QueryUser(email string) Model.User {
 	var users Model.User
+
 	db := database.Connect()
 	defer db.Close()
 	err := db.QueryRow(
@@ -72,12 +88,42 @@ func (AppHelper) QueryUser(email string) Model.User {
 }
 
 func (AppHelper) ActivateUser(w http.ResponseWriter, r *http.Request) {
+	log.Print(timeExpired)
+	if timeExpired {
+		if hasBeenVerified {
+			fmt.Fprintln(w, "Your email has been verified,")
+			return
+		}
+
+		fmt.Fprintln(w, "Email verification expired, try to register again")
+		return
+	}
+
 	fromMuxUrl := mux.Vars(r)
 	log.Print(fromMuxUrl["id"])
 
-	//add query in here and update the is_activated to true
+	id := fromMuxUrl["id"]
+	isActive := true
 
-	fmt.Fprintln(w, "Halo !! \n  Apa Kabar!!")
+	slice := []rune(id)
+
+	
+	resultSlice := string(slice[5:11])
+
+	log.Print(resultSlice+" "+strconv.FormatBool(isActive))
+	//add query in here and update the is_activated to true
+	db := database.Connect()
+	defer db.Close()
+
+	_, err := db.Exec("UPDATE users set is_activate = $1 where id = $2", isActive, resultSlice)
+	if err != nil {
+		log.Print(err)
+		fmt.Fprintln(w, "failed verification email")
+	}
+
+	timeExpired = true
+	hasBeenVerified = true
+	fmt.Fprintln(w, "Email successfully verified")
 }
 
 func (AppHelper) GenerateRandomInt() int {
