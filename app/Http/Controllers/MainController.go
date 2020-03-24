@@ -21,7 +21,7 @@ func (MainController) GetUser(res http.ResponseWriter, req *http.Request)  {
 
 	var users Model.User
 	var dataUsers []Model.User
-	var responseUser Model.Response
+	var responseUser Model.ResponseUser
 
 	db := database.Connect()
 	defer db.Close()
@@ -61,7 +61,7 @@ func (MainController) Test(res http.ResponseWriter, req *http.Request){
 func (MainController) Register(w http.ResponseWriter, r *http.Request){
 	var users Model.User
 	var dataUsers []Model.User
-	var responseUser Model.Response
+	var responseUser Model.ResponseUser
 	var idUser int
 
 
@@ -141,7 +141,7 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request){
 
 func (MainController) UpdateUser(w http.ResponseWriter, r *http.Request){
 
-	var responseUser Model.Response
+	var responseUser Model.ResponseUser
 
 
 	db := database.Connect()
@@ -179,7 +179,7 @@ func (MainController) UpdateUser(w http.ResponseWriter, r *http.Request){
 }
 
 func (MainController) DeleteUser(w http.ResponseWriter, r *http.Request){
-	var responseUser Model.Response
+	var responseUser Model.ResponseUser
 	//var id int
 
 	db := database.Connect()
@@ -215,7 +215,7 @@ func (MainController) DeleteUser(w http.ResponseWriter, r *http.Request){
 }
 
 func (MainController) UploadAvatar(w http.ResponseWriter, r *http.Request){
-	var responseUser Model.Response
+	var responseUser Model.ResponseUser
 	var users Model.User
 	var dataUsers []Model.User
 
@@ -261,7 +261,7 @@ func (MainController) UploadAvatar(w http.ResponseWriter, r *http.Request){
 }
 
 func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
-	var responseUser Model.Response
+	var responseUser Model.ResponseUser
 
 	err := r.ParseForm()
 	if err != nil {

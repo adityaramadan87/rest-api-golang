@@ -10,7 +10,7 @@ type User struct {
 	IsActivate bool `json:"is_activate"`
 }
 
-type Response struct {
+type ResponseUser struct {
 	Status int `json:"status"`
 	Message string `json:"message"`
 	Data []User
