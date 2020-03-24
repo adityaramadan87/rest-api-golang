@@ -23,8 +23,8 @@ var hasBeenVerified = false
 func (AppHelper) SendEmail(email string, id int, randInt int) bool {
 	const CONFIG_SMTP_HOST = "smtp.gmail.com"
 	const CONFIG_SMTP_PORT = 587
-	const CONFIG_EMAIL = "malfajri78@gmail.com"
-	const CONFIG_PASSWORD = "terlalupendek"
+	const CONFIG_EMAIL = "yourEmail"
+	const CONFIG_PASSWORD = "yourPassword"
 
 	hashId := strconv.Itoa(AppHelper{}.GenerateRandomInt())+strconv.Itoa(id)+strconv.Itoa(randInt)
 
