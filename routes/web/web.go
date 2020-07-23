@@ -25,6 +25,7 @@ func SetRoutes() *mux.Router {
 
 	//routes Attendance
 	router.HandleFunc("/user/attendance", AttendanceController{}.Attendance).Methods("POST")
+	router.HandleFunc("/user/check-attendance", AttendanceController{}.CheckAttendance).Methods("POST")
 
 	//if use middleware
 	router.HandleFunc("/auth/user/get", ApiMiddleware{}.Auth(MainController{}.GetUser)).Methods("GET")
