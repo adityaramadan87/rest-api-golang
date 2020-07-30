@@ -1,24 +1,23 @@
 package main
 
 import (
-	_"log"
-	"fmt"
-	"net/http"
-	"belajar-golang/routes/web"
 	"belajar-golang/routes/socket"
+	"belajar-golang/routes/web"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
+	_ "log"
+	"net/http"
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Halo !! \n  Apa Kabar!!")
 }
 
+func main() {
 
-func main()  {
-	
 	//set routes for HTTP
-	http.Handle("/",web.SetRoutes())
+	http.Handle("/", web.SetRoutes())
 
 	//for web
 	http.HandleFunc("/index", index)
@@ -31,10 +30,6 @@ func main()  {
 		panic(err)
 	}
 
-	
-	
-
 	// log.Fatal(http.ListenAndServe(":9000", nil))
-
 
 }

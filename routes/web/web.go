@@ -22,6 +22,12 @@ func SetRoutes() *mux.Router {
 
 	//murid routes
 	router.HandleFunc("/murid/get", MuridController{}.GetAllMurid).Methods("GET")
+	router.HandleFunc("/murid", MuridController{}.InsertMurid).Methods("POST")
+
+	//referalcode routes
+	router.HandleFunc("/referal-code", ReferalController{}.GetAllReferalCode).Methods("GET")
+	router.HandleFunc("/referal-code", ReferalController{}.InsertReferalCode).Methods("POST")
+	router.HandleFunc("/referal-code/{refcode}", ReferalController{}.GetByReferalCode).Methods("GET")
 
 	//routes verification email
 	router.HandleFunc("/user/verification/{id}", AppHelper{}.ActivateUser)

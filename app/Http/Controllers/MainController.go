@@ -118,7 +118,7 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//isSend := AppHelper{}.SendEmail(users.MuridID, idUser, randInt)
-
+	//
 	//if !isSend {
 	//	responseUser.Status = Constant.BadRequest
 	//	responseUser.Message = "failed sending email"

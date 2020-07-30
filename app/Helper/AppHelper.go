@@ -3,6 +3,7 @@ package Helper
 import (
 	"belajar-golang/app/Model"
 	"belajar-golang/database"
+	"database/sql"
 	"fmt"
 	"github.com/gorilla/mux"
 	"gopkg.in/gomail.v2"
@@ -85,6 +86,56 @@ func (AppHelper) QueryUser(murid_id int) Model.User {
 	return users
 }
 
+func (AppHelper) QueryMurid(email string) Model.Murid {
+	var murid Model.Murid
+
+	db := database.Connect()
+	defer db.Close()
+	err := db.QueryRow(
+		`SELECT id,
+		fullname,
+		email,
+		phone,
+		jurusan,
+		class,
+		sub_class
+		FROM murid WHERE email = $1`,
+		email).
+		Scan(
+			&murid.Id,
+			&murid.Fullname,
+			&murid.Email,
+			&murid.Phone,
+			&murid.Jurusan,
+			&murid.Class,
+			&murid.SubClass,
+		)
+	_ = err
+	return murid
+}
+
+func (AppHelper) QueryReferalCode(referalCode string, muridId int) Model.Referal {
+	var referal Model.Referal
+
+	db := database.Connect()
+	defer db.Close()
+	var row *sql.Row
+
+	if muridId == 0 {
+		row = db.QueryRow(`SELECT id,referal_code,murid_id,used FROM new_user_access WHERE referal_code = $1`, referalCode)
+	} else {
+		row = db.QueryRow(`SELECT id,referal_code,murid_id,used FROM new_user_access WHERE murid_id = $1`, muridId)
+	}
+
+	row.Scan(
+		&referal.Id,
+		&referal.ReferalCode,
+		&referal.MuridID,
+		&referal.Used,
+	)
+	return referal
+}
+
 //Belom Berguna
 func (AppHelper) ActivateUser(w http.ResponseWriter, r *http.Request) {
 	log.Print(timeExpired)
@@ -122,6 +173,17 @@ func (AppHelper) ActivateUser(w http.ResponseWriter, r *http.Request) {
 	timeExpired = true
 	hasBeenVerified = true
 	fmt.Fprintln(w, "Email successfully verified")
+}
+
+func (AppHelper) StringWithCharset(length int) string {
+	var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+	const charset = "abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
 }
 
 func (AppHelper) GenerateRandomInt() int {
