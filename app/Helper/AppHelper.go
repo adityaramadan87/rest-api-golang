@@ -1,20 +1,20 @@
 package Helper
 
 import (
-	"belajar-golang/database"
 	"belajar-golang/app/Model"
+	"belajar-golang/database"
+	"fmt"
+	"github.com/gorilla/mux"
 	"gopkg.in/gomail.v2"
 	"log"
 	"math/rand"
-	"time"
 	"net/http"
-	"github.com/gorilla/mux"
-	"strconv"
-	"fmt"
 	_ "reflect"
+	"strconv"
+	"time"
 )
 
-type AppHelper struct {}
+type AppHelper struct{}
 
 var expiredActivationTimer *time.Timer
 var timeExpired bool = false
@@ -26,7 +26,7 @@ func (AppHelper) SendEmail(email string, id int, randInt int) bool {
 	const CONFIG_EMAIL = "yourEmail"
 	const CONFIG_PASSWORD = "yourPassword"
 
-	hashId := strconv.Itoa(AppHelper{}.GenerateRandomInt())+strconv.Itoa(id)+strconv.Itoa(randInt)
+	hashId := strconv.Itoa(AppHelper{}.GenerateRandomInt()) + strconv.Itoa(id) + strconv.Itoa(randInt)
 
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", CONFIG_EMAIL)
@@ -49,8 +49,8 @@ func (AppHelper) SendEmail(email string, id int, randInt int) bool {
 
 	expiredActivationTimer = time.NewTimer(25 * time.Second)
 
-	go func(){
-		<- expiredActivationTimer.C
+	go func() {
+		<-expiredActivationTimer.C
 		log.Print("expired")
 		timeExpired = true
 	}()
@@ -59,34 +59,33 @@ func (AppHelper) SendEmail(email string, id int, randInt int) bool {
 	return true
 }
 
-func (AppHelper) QueryUser(email string) Model.User {
+func (AppHelper) QueryUser(murid_id int) Model.User {
 	var users Model.User
 
 	db := database.Connect()
 	defer db.Close()
 	err := db.QueryRow(
 		`SELECT id,
-		fullname,
-		email,
-		phone,
+		murid_id,
 		avatar,
 		password,
-		is_activate
-		FROM users WHERE email = $1`,
-		email).
+		is_activate,
+		referal_code
+		FROM users WHERE murid_id = $1`,
+		murid_id).
 		Scan(
 			&users.Id,
-			&users.Fullname,
-			&users.Email,
-			&users.Phone,
+			&users.MuridID,
 			&users.Avatar,
 			&users.Password,
 			&users.IsActivate,
+			&users.ReferalCode,
 		)
 	_ = err
 	return users
 }
 
+//Belom Berguna
 func (AppHelper) ActivateUser(w http.ResponseWriter, r *http.Request) {
 	log.Print(timeExpired)
 	if timeExpired {
@@ -107,10 +106,9 @@ func (AppHelper) ActivateUser(w http.ResponseWriter, r *http.Request) {
 
 	slice := []rune(id)
 
-	
 	resultSlice := string(slice[5:11])
 
-	log.Print(resultSlice+" "+strconv.FormatBool(isActive))
+	log.Print(resultSlice + " " + strconv.FormatBool(isActive))
 	//add query in here and update the is_activated to true
 	db := database.Connect()
 	defer db.Close()
@@ -127,7 +125,7 @@ func (AppHelper) ActivateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (AppHelper) GenerateRandomInt() int {
-    rand.Seed(time.Now().UnixNano())
-    slice := rand.Intn(99999)
-    return slice
+	rand.Seed(time.Now().UnixNano())
+	slice := rand.Intn(99999)
+	return slice
 }

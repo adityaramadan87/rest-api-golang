@@ -1,23 +1,23 @@
 package Controllers
 
 import (
+	Constant "belajar-golang/app/Constant"
+	. "belajar-golang/app/Helper"
+	"belajar-golang/app/Model"
+	"belajar-golang/database"
+	_ "encoding/base64"
+	"encoding/json"
+	"golang.org/x/crypto/bcrypt"
+	_ "gopkg.in/gomail.v2"
 	"log"
 	"net/http"
-	"encoding/json"
-	"belajar-golang/database"
-	"belajar-golang/app/Model"
-	Constant "belajar-golang/app/Constant"
-	"golang.org/x/crypto/bcrypt"
 	"strconv"
-	. "belajar-golang/app/Helper"
-	_ "gopkg.in/gomail.v2"
-	_ "encoding/base64"
 	_ "strings"
 )
 
 type MainController struct{}
 
-func (MainController) GetUser(res http.ResponseWriter, req *http.Request)  {
+func (MainController) GetUser(res http.ResponseWriter, req *http.Request) {
 
 	var users Model.User
 	var dataUsers []Model.User
@@ -30,8 +30,8 @@ func (MainController) GetUser(res http.ResponseWriter, req *http.Request)  {
 		log.Print(err)
 	}
 
-	for rows.Next(){
-		if err := rows.Scan(&users.Id, &users.Fullname, &users.Email, &users.Phone, &users.Avatar, &users.Password, &users.IsActivate); err != nil {
+	for rows.Next() {
+		if err := rows.Scan(&users.Id, &users.MuridID, &users.Password, &users.Avatar, &users.ReferalCode, &users.IsActivate); err != nil {
 			log.Fatal(err)
 		} else {
 			dataUsers = append(dataUsers, users)
@@ -44,28 +44,27 @@ func (MainController) GetUser(res http.ResponseWriter, req *http.Request)  {
 
 	res.Header().Set("Content-type", "application/json")
 	json.NewEncoder(res).Encode(responseUser)
-	
+
 }
 
 type Hello struct {
 	Message string
 }
 
-func (MainController) Test(res http.ResponseWriter, req *http.Request){
+func (MainController) Test(res http.ResponseWriter, req *http.Request) {
 	var message Hello
 	message.Message = "Testing"
 	res.Header().Set("Content-type", "application/json")
 	json.NewEncoder(res).Encode(message)
 }
 
-func (MainController) Register(w http.ResponseWriter, r *http.Request){
+func (MainController) Register(w http.ResponseWriter, r *http.Request) {
 	var users Model.User
 	var dataUsers []Model.User
 	var responseUser Model.ResponseUser
 	var idUser int
 
-
-	randInt := AppHelper{}.GenerateRandomInt()
+	//randInt := AppHelper{}.GenerateRandomInt()
 
 	db := database.Connect()
 	defer db.Close()
@@ -75,62 +74,61 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request){
 		panic(err)
 	}
 	users.Id, err = strconv.Atoi(r.Form.Get("id"))
-	users.Fullname = r.Form.Get("fullname")
-	users.Email = r.Form.Get("email")
-	users.Phone = r.Form.Get("phone")
+	users.MuridID, err = strconv.Atoi(r.Form.Get("murid_id"))
+	users.ReferalCode = r.Form.Get("referal_code")
 	users.Avatar = r.Form.Get("avatar")
 	users.Password = r.Form.Get("password")
 	users.IsActivate = false
 	log.Print(users.Password)
 
-	var summaryUser Model.User = AppHelper{}.QueryUser(users.Email)
+	var summaryUser Model.User = AppHelper{}.QueryUser(users.MuridID)
 	if (Model.User{}) != summaryUser {
 		responseUser.Status = Constant.BadRequest
 		responseUser.Message = "the user who uses the email already exists"
 		w.Header().Set("Content-type", "application/json")
 		json.NewEncoder(w).Encode(responseUser)
-		return 
+		return
 	}
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(users.Password), bcrypt.DefaultCost)
 
-	_, err = db.Exec("INSERT INTO users (fullname, email, phone, avatar, password, is_activate) values ($1,$2,$3,$4,$5,$6)", users.Fullname, users.Email, users.Phone, users.Avatar, hashPassword, users.IsActivate)
+	_, err = db.Exec("INSERT INTO users (murid_id, avatar, password, is_activate, referal_code) values ($1,$2,$3,$4,$5)", users.MuridID, users.Avatar, hashPassword, users.IsActivate, users.ReferalCode)
 	if err != nil {
 		log.Print(err)
 		responseUser.Status = Constant.BadRequest
 		responseUser.Message = "Register Failed"
 		w.Header().Set("Content-type", "application/json")
 		json.NewEncoder(w).Encode(responseUser)
-		return 
+		return
 	}
-	
-	data, err := db.Query("SELECT * FROM users WHERE email = $1", users.Email)
+
+	data, err := db.Query("SELECT * FROM users WHERE murid_id = $1", users.MuridID)
 	for data.Next() {
-		if err:= data.Scan(&users.Id, &users.Fullname, &users.Email, &users.Phone, &users.Avatar, &users.Password, &users.IsActivate); err != nil {
+		if err := data.Scan(&users.Id, &users.MuridID, &users.ReferalCode, &users.Avatar, &users.Password, &users.IsActivate); err != nil {
 			log.Print(err)
-		}else {
+		} else {
 			idUser = users.Id
 			dataUsers = append(dataUsers, users)
 		}
 	}
-	var userAdded Model.User = AppHelper{}.QueryUser(users.Email)
+	var userAdded Model.User = AppHelper{}.QueryUser(users.MuridID)
 	if (Model.User{}) != userAdded {
 		idUser = userAdded.Id
 		log.Print(idUser)
 	}
 
-	isSend := AppHelper{}.SendEmail(users.Email, idUser, randInt)
+	//isSend := AppHelper{}.SendEmail(users.MuridID, idUser, randInt)
 
-	if !isSend {
-		responseUser.Status = Constant.BadRequest
-		responseUser.Message = "failed sending email"
-		w.Header().Set("Content-type", "application/json")
-		json.NewEncoder(w).Encode(responseUser)
-		return 
-	}
+	//if !isSend {
+	//	responseUser.Status = Constant.BadRequest
+	//	responseUser.Message = "failed sending email"
+	//	w.Header().Set("Content-type", "application/json")
+	//	json.NewEncoder(w).Encode(responseUser)
+	//	return
+	//}
 
 	responseUser.Status = Constant.SuccessRequest
-	responseUser.Message = "Success register \n We send email verification to your email \n please check your email for activation"
+	responseUser.Message = "Success register \n Login with your nim "
 	responseUser.Data = dataUsers
 	log.Print("Insert to database table users")
 
@@ -139,27 +137,25 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (MainController) UpdateUser(w http.ResponseWriter, r *http.Request){
+func (MainController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	var responseUser Model.ResponseUser
 
-
 	db := database.Connect()
 	defer db.Close()
-	
+
 	err := r.ParseForm()
 	if err != nil {
 		panic(err)
 	}
 	id := r.Form.Get("id")
-	fullname := r.Form.Get("fullname")
-	email := r.Form.Get("email")
-	phone := r.Form.Get("phone")
+	muridID, _ := strconv.Atoi(r.Form.Get("murid_id"))
+	referalCode := r.Form.Get("referalCode")
 	avatar := r.Form.Get("avatar")
 	user_id, _ := strconv.Atoi(id)
 
-	_, err = db.Query("UPDATE users set fullname = $1, email = $2, phone = $3, avatar = $4 where id = $5", fullname, email, phone, avatar, user_id)
-	
+	_, err = db.Query("UPDATE users set murid_id = $1, referal_code = $2,  avatar = $4 where id = $5", muridID, referalCode, avatar, user_id)
+
 	if err != nil {
 		log.Print(err)
 		responseUser.Status = Constant.BadRequest
@@ -178,7 +174,7 @@ func (MainController) UpdateUser(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (MainController) DeleteUser(w http.ResponseWriter, r *http.Request){
+func (MainController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var responseUser Model.ResponseUser
 	//var id int
 
@@ -194,8 +190,8 @@ func (MainController) DeleteUser(w http.ResponseWriter, r *http.Request){
 
 	user_id, _ := strconv.Atoi(id)
 
-	_, err = db.Exec("DELETE FROM users WHERE id = $1",user_id)
-	
+	_, err = db.Exec("DELETE FROM users WHERE id = $1", user_id)
+
 	if err != nil {
 		log.Print(err)
 		responseUser.Status = Constant.BadRequest
@@ -214,14 +210,14 @@ func (MainController) DeleteUser(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (MainController) UploadAvatar(w http.ResponseWriter, r *http.Request){
+func (MainController) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	var responseUser Model.ResponseUser
 	var users Model.User
 	var dataUsers []Model.User
 
 	db := database.Connect()
 	defer db.Close()
-	
+
 	err := r.ParseForm()
 	if err != nil {
 		panic(err)
@@ -240,16 +236,15 @@ func (MainController) UploadAvatar(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	
-	data, err := db.Query("SELECT * FROM users WHERE id = $1", id,)
+	data, err := db.Query("SELECT * FROM users WHERE id = $1", id)
 	for data.Next() {
-		if err:= data.Scan(&users.Id, &users.Fullname, &users.Email, &users.Phone, &users.Avatar, &users.IsActivate); err != nil {
+		if err := data.Scan(&users.Id, &users.MuridID, &users.ReferalCode, &users.Avatar, &users.IsActivate); err != nil {
 			log.Print(err)
-		}else {
+		} else {
 			dataUsers = append(dataUsers, users)
 		}
 	}
-	
+
 	responseUser.Status = Constant.SuccessRequest
 	responseUser.Message = "Success add avatar"
 	responseUser.Data = dataUsers
@@ -260,7 +255,7 @@ func (MainController) UploadAvatar(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
+func (MainController) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var responseUser Model.ResponseUser
 
 	err := r.ParseForm()
@@ -268,23 +263,23 @@ func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
 		panic(err)
 	}
 
-	email := r.Form.Get("email")
+	muridID, _ := strconv.Atoi(r.Form.Get("murid_id"))
 	password := r.Form.Get("password")
 
-	var summaryUser Model.User = AppHelper{}.QueryUser(email)
-	if (Model.User{}) == summaryUser {
-		responseUser.Status = Constant.BadRequest
-		responseUser.Message = "Wrong email"
-		w.Header().Set("Content-type", "application/json")
-		json.NewEncoder(w).Encode(responseUser)
-		return 
-	} else if (Model.User{}.IsActivate) == summaryUser.IsActivate {
-		responseUser.Status = Constant.BadRequest
-		responseUser.Message = "Account isn't activated, check your email for activation"
-		w.Header().Set("Content-type", "application/json")
-		json.NewEncoder(w).Encode(responseUser)
-		return 
-	}
+	var summaryUser Model.User = AppHelper{}.QueryUser(muridID)
+	//if (Model.User{}) == summaryUser {
+	//	responseUser.Status = Constant.BadRequest
+	//	responseUser.Message = "Wrong email"
+	//	w.Header().Set("Content-type", "application/json")
+	//	json.NewEncoder(w).Encode(responseUser)
+	//	return
+	//} else if (Model.User{}.IsActivate) == summaryUser.IsActivate {
+	//	responseUser.Status = Constant.BadRequest
+	//	responseUser.Message = "Account isn't activated, check your email for activation"
+	//	w.Header().Set("Content-type", "application/json")
+	//	json.NewEncoder(w).Encode(responseUser)
+	//	return
+	//}
 
 	var errPassword = bcrypt.CompareHashAndPassword([]byte(summaryUser.Password), []byte(password))
 
@@ -294,7 +289,7 @@ func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
 		responseUser.Message = "Wrong password"
 		w.Header().Set("Content-type", "application/json")
 		json.NewEncoder(w).Encode(responseUser)
-		return 
+		return
 	}
 
 	responseUser.Status = Constant.SuccessRequest
@@ -304,4 +299,3 @@ func (MainController) LoginUser(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(responseUser)
 
 }
-

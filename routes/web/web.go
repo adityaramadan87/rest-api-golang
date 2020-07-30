@@ -1,14 +1,14 @@
 package web
 
 import (
-	"github.com/gorilla/mux"
-	. "belajar-golang/app/Http/Middleware"
-	. "belajar-golang/app/Http/Controllers"
 	. "belajar-golang/app/Helper"
+	. "belajar-golang/app/Http/Controllers"
+	. "belajar-golang/app/Http/Middleware"
+	"github.com/gorilla/mux"
 )
 
 func SetRoutes() *mux.Router {
-	
+
 	router := mux.NewRouter()
 
 	//input routes user in here
@@ -19,6 +19,9 @@ func SetRoutes() *mux.Router {
 	router.HandleFunc("/user/delete", MainController{}.DeleteUser).Methods("POST")
 	router.HandleFunc("/upload/avatar", MainController{}.UploadAvatar).Methods("POST")
 	router.HandleFunc("/user/login", MainController{}.LoginUser).Methods("POST")
+
+	//murid routes
+	router.HandleFunc("/murid/get", MuridController{}.GetAllMurid).Methods("GET")
 
 	//routes verification email
 	router.HandleFunc("/user/verification/{id}", AppHelper{}.ActivateUser)
