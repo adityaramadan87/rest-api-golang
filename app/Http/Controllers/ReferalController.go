@@ -140,7 +140,7 @@ func (ReferalController) InsertReferalCode(w http.ResponseWriter, r *http.Reques
 func (ReferalController) GetByReferalCode(w http.ResponseWriter, r *http.Request) {
 	var referal Model.Referal
 	var referals []Model.Referal
-	var responseReferal Model.ResponseReferal
+	var responseReferal Model.ResponseReferall
 
 	fromMuxUrl := mux.Vars(r)
 	log.Print(fromMuxUrl["refcode"])
@@ -170,11 +170,11 @@ func (ReferalController) GetByReferalCode(w http.ResponseWriter, r *http.Request
 		if referal.Used {
 			responseReferal.Status = Constant.BadRequest
 			responseReferal.Message = "Referal code already used"
-			responseReferal.Data = referals
+			responseReferal.Data = referal
 		} else {
 			responseReferal.Status = Constant.SuccessRequest
 			responseReferal.Message = "Success"
-			responseReferal.Data = referals
+			responseReferal.Data = referal
 		}
 
 		w.Header().Set("Content-type", "application/json")
@@ -183,7 +183,7 @@ func (ReferalController) GetByReferalCode(w http.ResponseWriter, r *http.Request
 	} else {
 		responseReferal.Status = Constant.BadRequest
 		responseReferal.Message = "No data"
-		responseReferal.Data = referals
+		responseReferal.Data = referal
 
 		w.Header().Set("Content-type", "application/json")
 		json.NewEncoder(w).Encode(responseReferal)

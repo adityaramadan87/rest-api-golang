@@ -8,7 +8,13 @@ type Referal struct {
 }
 
 type ResponseReferal struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
-	Data    []Referal
+	Status  int       `json:"status"`
+	Message string    `json:"message"`
+	Data    []Referal `json:"data"`
+}
+
+type ResponseReferall struct {
+	Status  int     `json:"status"`
+	Message string  `json:"message"`
+	Data    Referal `json:"data"`
 }
