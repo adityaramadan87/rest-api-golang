@@ -84,7 +84,7 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request) {
 	var summaryUser Model.User = AppHelper{}.QueryUser(users.MuridID)
 	if (Model.User{}) != summaryUser {
 		responseUser.Status = Constant.BadRequest
-		responseUser.Message = "the user who uses the email already exists"
+		responseUser.Message = "the user who uses the murid id already exists"
 		w.Header().Set("Content-type", "application/json")
 		json.NewEncoder(w).Encode(responseUser)
 		return
@@ -116,16 +116,6 @@ func (MainController) Register(w http.ResponseWriter, r *http.Request) {
 		idUser = userAdded.Id
 		log.Print(idUser)
 	}
-
-	//isSend := AppHelper{}.SendEmail(users.MuridID, idUser, randInt)
-	//
-	//if !isSend {
-	//	responseUser.Status = Constant.BadRequest
-	//	responseUser.Message = "failed sending email"
-	//	w.Header().Set("Content-type", "application/json")
-	//	json.NewEncoder(w).Encode(responseUser)
-	//	return
-	//}
 
 	responseUser.Status = Constant.SuccessRequest
 	responseUser.Message = "Success register \n Login with your nim "

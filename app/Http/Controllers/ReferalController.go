@@ -182,8 +182,8 @@ func (ReferalController) GetByReferalCode(w http.ResponseWriter, r *http.Request
 
 	} else {
 		responseReferal.Status = Constant.BadRequest
-		responseReferal.Message = "No data"
-		responseReferal.Data = referal
+		responseReferal.Message = "Referal code not found"
+		responseReferal.Data = Model.Referal{}
 
 		w.Header().Set("Content-type", "application/json")
 		json.NewEncoder(w).Encode(responseReferal)

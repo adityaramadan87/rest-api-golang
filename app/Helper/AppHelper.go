@@ -177,7 +177,7 @@ func (AppHelper) ActivateUser(w http.ResponseWriter, r *http.Request) {
 
 func (AppHelper) StringWithCharset(length int) string {
 	var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-	const charset = "abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 	b := make([]byte, length)
 	for i := range b {

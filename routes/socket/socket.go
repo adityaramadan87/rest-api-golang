@@ -1,13 +1,13 @@
 package socket
 
 import (
-	"log"
 	"fmt"
 	socketio "github.com/googollee/go-socket.io"
+	"log"
 )
 
-func SetRoutes() *socketio.Server  {
-	
+func SetRoutes() *socketio.Server {
+
 	socket, err := socketio.NewServer(nil)
 	if err != nil {
 		log.Fatal(err)
